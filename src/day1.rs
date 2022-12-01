@@ -1,40 +1,33 @@
 pub fn main(input: String) -> anyhow::Result<()> {
-    let elves_calories: Vec<_> = input.split("\n\n").collect();
+    const ELF_DELIMITER: &str = "\n\n";
+    const ITEM_DELIMITER: char = '\n';
 
-    let mut elves = Vec::with_capacity(elves_calories.len());
+    // Last elf has a trailing newline
+    let input = input.trim();
 
-    for elf_calories in elves_calories {
-        let elf_calories = elf_calories.trim();
-        log::debug!("elf calories: {elf_calories}");
+    let elves: Vec<_> = input
+        .split(ELF_DELIMITER)
+        .map(|elf_calories| {
+            let items = elf_calories
+                .split(ITEM_DELIMITER)
+                .map(|item_calories| item_calories.parse().unwrap_or_default())
+                .collect();
 
-        let items_calories: Vec<_> = elf_calories.split('\n').collect();
-        log::debug!("items calories: {items_calories:?}");
+            Elf { items }
+        })
+        .collect();
 
-        let mut elf = Elf {
-            items: Vec::with_capacity(items_calories.len()),
-        };
+    let mut calorie_totals: Vec<_> = elves.iter().map(|elf| elf.total()).collect();
 
-        for item_calories in items_calories {
-            let item: Item = item_calories.parse()?;
-            log::debug!("item calories: {item_calories}");
-
-            elf.items.push(item);
-        }
-
-        elves.push(elf);
-    }
-
-    let mut calorie_sums: Vec<_> = elves.into_iter().map(|elf| elf.total()).collect();
-
-    calorie_sums.sort();
-    calorie_sums.reverse();
+    calorie_totals.sort();
+    calorie_totals.reverse();
 
     // Part 1
-    let most_calories: u32 = calorie_sums.iter().take(1).sum();
+    let most_calories: u32 = calorie_totals.iter().take(1).sum();
     log::info!("most calories carried: {most_calories}");
 
     // Part 2
-    let top_3_calories: u32 = calorie_sums.iter().take(3).sum();
+    let top_3_calories: u32 = calorie_totals.iter().take(3).sum();
     log::info!("sum of top three calories carried: {top_3_calories}");
 
     Ok(())
