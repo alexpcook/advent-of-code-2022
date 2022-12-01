@@ -7,4 +7,4 @@ build: lint
 	cargo build
 
 run: build
-	cargo run
+	cargo run -- --day $(AOC_DAY)
