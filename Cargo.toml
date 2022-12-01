@@ -9,4 +9,6 @@ edition = "2021"
 anyhow = "1.0.66"
 clap = { version = "4.0.29", features = ["derive"] }
 log = "0.4.17"
+reqwest = "0.11.13"
 simple_logger = "4.0.0"
+tokio = { version = "1.22.0", features = ["full"] }
