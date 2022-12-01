@@ -1,6 +1,7 @@
 use std::{fs::File, io, path::Path};
 
 use clap::Parser;
+use log::LevelFilter;
 use simple_logger::SimpleLogger;
 
 /// The default day to execute if CLI argument is not given.
@@ -31,7 +32,10 @@ fn read_input_file(path: String) -> Result<String, io::Error> {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    SimpleLogger::new().init()?;
+    SimpleLogger::new()
+        .with_level(LevelFilter::Info)
+        .env()
+        .init()?;
 
     let aoc = AdventOfCode::parse();
     let day = match aoc.day.unwrap_or(DEFAULT_DAY) {
@@ -42,6 +46,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         x => x,
     };
 
+    log::info!("running challenge from day {day}");
+
     let input_filepath = format!("{INPUT_FILE_DIRECTORY}/day_{day}.txt");
     let input = match read_input_file(input_filepath) {
         Ok(s) => s,
@@ -50,8 +56,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             return Err(Box::new(e));
         }
     };
-
-    log::info!("running challenge from day {day}");
 
     Ok(())
 }
