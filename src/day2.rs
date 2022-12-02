@@ -17,6 +17,7 @@ pub fn main(input: String) -> anyhow::Result<()> {
     Ok(())
 }
 
+/// Part 1 solution.
 fn part1(games: &[(char, char)]) -> u64 {
     games
         .iter()
@@ -32,6 +33,7 @@ fn part1(games: &[(char, char)]) -> u64 {
         .sum()
 }
 
+/// Part 2 solution.
 fn part2(games: &[(char, char)]) -> u64 {
     games
         .iter()
