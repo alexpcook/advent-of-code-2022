@@ -5,8 +5,8 @@ pub fn main(input: String) -> anyhow::Result<()> {
             let (first_compartment, second_compartment) = rucksack.split_at(rucksack.len() / 2);
             first_compartment
                 .chars()
-                .filter_map(|c| second_compartment.contains(c).then(|| get_priority(c)))
-                .last()
+                .find(|&c| second_compartment.contains(c))
+                .map(get_priority)
                 .unwrap_or_default()
         })
         .sum();
