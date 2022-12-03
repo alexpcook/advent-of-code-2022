@@ -12,7 +12,7 @@ pub fn main(input: String) -> anyhow::Result<()> {
         .sum();
 
     // Part 1
-    log::info!("part 1: {common_item_priority_sum}");
+    log::info!("common item priority sum: {common_item_priority_sum}");
 
     let badge_priority_sum: u64 = input
         .lines()
@@ -24,15 +24,14 @@ pub fn main(input: String) -> anyhow::Result<()> {
                 .and_then(|first_rucksack| {
                     first_rucksack
                         .chars()
-                        .filter_map(|c| {
+                        .find(|&c| {
                             matches!(
                                 (group.get(1), group.get(2)),
                                 (Some(second_rucksack), Some(third_rucksack))
                                     if second_rucksack.contains(c) && third_rucksack.contains(c)
                             )
-                            .then(|| get_priority(c))
                         })
-                        .last()
+                        .map(get_priority)
                 })
                 .unwrap_or_default()
         })
