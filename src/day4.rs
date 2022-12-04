@@ -18,29 +18,25 @@ pub fn main(input: String) -> anyhow::Result<()> {
         .collect();
 
     // Part 1
-    let fully_contained_count = pairs
-        .clone()
-        .into_iter()
-        .filter(one_range_is_fully_contained)
-        .count();
+    let fully_contained_count = pairs.iter().filter(one_range_is_fully_contained).count();
     log::info!("full contained count: {fully_contained_count}");
 
     // Part 2
-    let any_overlap_count = pairs.into_iter().filter(ranges_have_any_overlap).count();
+    let any_overlap_count = pairs.iter().filter(ranges_have_any_overlap).count();
     log::info!("any overlap count: {any_overlap_count}");
 
     Ok(())
 }
 
 /// Is one range fully contained within the other?
-fn one_range_is_fully_contained(ranges: &((u32, u32), (u32, u32))) -> bool {
+fn one_range_is_fully_contained(ranges: &&((u32, u32), (u32, u32))) -> bool {
     let lhs = ranges.0;
     let rhs = ranges.1;
     (lhs.0 <= rhs.0 && lhs.1 >= rhs.1) || (rhs.0 <= lhs.0 && rhs.1 >= lhs.1)
 }
 
 /// Do the ranges overlap at all?
-fn ranges_have_any_overlap(ranges: &((u32, u32), (u32, u32))) -> bool {
+fn ranges_have_any_overlap(ranges: &&((u32, u32), (u32, u32))) -> bool {
     let lhs = ranges.0;
     let rhs = ranges.1;
     (rhs.0 <= lhs.0 || lhs.1 >= rhs.0) && lhs.0 <= rhs.1
