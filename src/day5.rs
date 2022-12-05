@@ -1,7 +1,7 @@
 pub fn main(input: String) -> anyhow::Result<()> {
     let (initial_stack, instructions) = input.split_once("\n\n").unwrap();
 
-    let mut stacks = Stacks::default();
+    let mut stacks = Stacks::<9>::default();
 
     let rows: Vec<_> = initial_stack.split('\n').collect();
 
@@ -19,7 +19,7 @@ pub fn main(input: String) -> anyhow::Result<()> {
     let instructions: Vec<_> = instructions
         .split('\n')
         .filter(|s| !s.trim().is_empty())
-        .map(|i| Instruction::new(i.to_string()))
+        .filter_map(|i| Instruction::try_from(i).ok())
         .collect();
 
     for instruction in instructions {
@@ -40,31 +40,50 @@ pub fn main(input: String) -> anyhow::Result<()> {
 
     println!();
 
-    todo!();
+    Ok(())
 }
 
+/// A crate contains an ASCII uppercase letter.
 type Crate = char;
 
-type Stacks = [Vec<Crate>; 9];
+/// There are `N` stacks of `Crate`s.
+type Stacks<const N: usize> = [Vec<Crate>; N];
 
+/// An instruction moves `quantity` crates from `start` stack to `end` stack.
 struct Instruction {
     quantity: usize,
     start: usize,
     end: usize,
 }
 
-impl Instruction {
-    fn new(raw: String) -> Instruction {
-        let parts: Vec<_> = raw.split_whitespace().map(|s| s.trim()).collect();
+impl TryFrom<&str> for Instruction {
+    type Error = &'static str;
 
-        let quantity: usize = parts.get(1).unwrap().parse().unwrap();
-        let start: usize = parts.get(3).unwrap().parse().unwrap();
-        let end: usize = parts.get(5).unwrap().parse().unwrap();
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        let parts: Vec<_> = value
+            .split_whitespace()
+            .filter_map(|s| {
+                let s = s.trim();
+                (!s.is_empty()).then_some(s)
+            })
+            .collect();
 
-        Instruction {
-            quantity,
-            start,
-            end,
-        }
+        Ok(Instruction {
+            quantity: parts
+                .get(1)
+                .ok_or("failed to find quantity")?
+                .parse()
+                .map_err(|_| "failed to parse quantity")?,
+            start: parts
+                .get(3)
+                .ok_or("failed to find start")?
+                .parse()
+                .map_err(|_| "failed to parse start")?,
+            end: parts
+                .get(5)
+                .ok_or("failed to find end")?
+                .parse()
+                .map_err(|_| "failed to parse end")?,
+        })
     }
 }
