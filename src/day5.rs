@@ -1,44 +1,97 @@
 pub fn main(input: String) -> anyhow::Result<()> {
-    let (initial_stack, instructions) = input.split_once("\n\n").unwrap();
+    let (raw_initial_stack, raw_instructions) = input.split_once("\n\n").unwrap();
 
+    // There are nine stacks in this particular case
     let mut stacks = Stacks::<9>::default();
 
-    let rows: Vec<_> = initial_stack.split('\n').collect();
+    let raw_initial_stack_rows: Vec<_> = raw_initial_stack
+        .split('\n')
+        .filter_map(|row| {
+            let row = row.trim();
+            // Skip the row with the stack numbers
+            (!row.is_empty() && !row.contains('1')).then_some(row)
+        })
+        // Crates toward the bottom of each stack need to be added to the vector first
+        .rev()
+        .collect();
 
-    for row in rows {
-        for (i, a_crate) in row.chars().skip(1).step_by(4).enumerate() {
-            println!("{i} {a_crate}");
-            if a_crate.is_ascii_uppercase() {
-                stacks[i].push(a_crate);
+    for raw_initial_stack_row in raw_initial_stack_rows {
+        // `crate` is a Rust keyword, so use `_crate` instead
+        // Skip the first `[` character in each row and increment by four after that
+        for (i, _crate) in raw_initial_stack_row.chars().skip(1).step_by(4).enumerate() {
+            // Should always be true with valid input, but check just in case
+            if _crate.is_ascii_uppercase() {
+                stacks[i].push(_crate);
             }
         }
     }
 
-    stacks.iter_mut().for_each(|s| s.reverse());
-
-    let instructions: Vec<_> = instructions
+    let instructions: Vec<_> = raw_instructions
         .split('\n')
-        .filter(|s| !s.trim().is_empty())
-        .filter_map(|i| Instruction::try_from(i).ok())
+        .filter_map(|s| {
+            let s = s.trim();
+            if s.is_empty() {
+                None
+            } else {
+                Instruction::try_from(s).ok()
+            }
+        })
         .collect();
 
-    for instruction in instructions {
-        let mut temp = vec![];
+    // Part 1
+    // We need a copy of the stacks for each part because we are mutating
+    let mut stacks_for_part1 = stacks.clone();
+
+    for instruction in &instructions {
         for _ in 0..instruction.quantity {
-            let moved = stacks[instruction.start - 1].pop().unwrap();
-            temp.push(moved);
+            let moved_crate = stacks_for_part1[instruction.start - 1]
+                .pop()
+                .unwrap_or_default();
+
+            stacks_for_part1[instruction.end - 1].push(moved_crate);
         }
+    }
+
+    let top_crates_for_part1 = stacks_for_part1
+        .iter()
+        .fold(String::new(), |mut top, stack| {
+            top.push(*stack.last().unwrap_or(&char::default()));
+            top
+        });
+
+    println!("top crates for part 1: {top_crates_for_part1}");
+
+    // Part 2
+    let mut stacks_for_part2 = stacks;
+
+    for instruction in &instructions {
+        // Need a temporary holding place for moved crates in each instruction
+        let mut temp = Vec::with_capacity(instruction.quantity);
+
+        for _ in 0..instruction.quantity {
+            let moved_crate = stacks_for_part2[instruction.start - 1]
+                .pop()
+                .unwrap_or_default();
+
+            temp.push(moved_crate);
+        }
+
+        // Moving multiple crates at once means order is reversed from part 1
         temp.reverse();
-        for moved in temp {
-            stacks[instruction.end - 1].push(moved);
+
+        for moved_crate in temp {
+            stacks_for_part2[instruction.end - 1].push(moved_crate);
         }
     }
 
-    for stack in stacks {
-        print!("{}", stack.get(stack.len() - 1).unwrap());
-    }
+    let top_crates_for_part2 = stacks_for_part2
+        .iter()
+        .fold(String::new(), |mut top, stack| {
+            top.push(*stack.last().unwrap_or(&char::default()));
+            top
+        });
 
-    println!();
+    println!("top crates for part 2: {top_crates_for_part2}");
 
     Ok(())
 }
@@ -62,9 +115,9 @@ impl TryFrom<&str> for Instruction {
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         let parts: Vec<_> = value
             .split_whitespace()
-            .filter_map(|s| {
-                let s = s.trim();
-                (!s.is_empty()).then_some(s)
+            .filter_map(|part| {
+                let part = part.trim();
+                (!part.is_empty()).then_some(part)
             })
             .collect();
 
