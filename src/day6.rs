@@ -20,7 +20,15 @@ pub fn main(input: String) -> anyhow::Result<()> {
 
 /// Returns the number of characters processed in `chars` to arrive at a chunk of length `n` of all
 /// distinct characters. Returns `None` if no chunks of size `n` contain all distinct characters.
+///
+/// # Panics
+///
+/// Panics if `n` is zero.
 fn first_distinct_chunk(chars: &[char], n: usize) -> Option<usize> {
+    if n == 0 {
+        panic!("n must be greater than zero");
+    }
+
     let mut i = 0;
     let mut contains = HashSet::with_capacity(n);
 
