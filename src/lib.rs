@@ -38,6 +38,8 @@ pub mod day6;
 pub mod day7;
 /// Day 8 solution.
 pub mod day8;
+/// Day 9 solution.
+pub mod day9;
 
 /// Runs a solution from the given configuration.
 pub async fn solution(config: Config) -> anyhow::Result<()> {
@@ -67,6 +69,7 @@ pub async fn solution(config: Config) -> anyhow::Result<()> {
         6 => day6::main(input),
         7 => day7::main(input),
         8 => day8::main(input),
+        9 => day9::main(input),
         d => bail!("solution for day {d} does not exist"),
     }
 }
