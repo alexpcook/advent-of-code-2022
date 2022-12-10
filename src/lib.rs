@@ -24,6 +24,8 @@ pub struct Config {
 
 /// Day 1 solution.
 pub mod day1;
+/// Day 10 solution.
+pub mod day10;
 /// Day 2 solution.
 pub mod day2;
 /// Day 3 solution.
@@ -70,6 +72,7 @@ pub async fn solution(config: Config) -> anyhow::Result<()> {
         7 => day7::main(input),
         8 => day8::main(input),
         9 => day9::main(input),
+        10 => day10::main(input),
         d => bail!("solution for day {d} does not exist"),
     }
 }
