@@ -1,3 +1,5 @@
+use std::fmt;
+
 use anyhow::bail;
 
 pub fn main(input: String) -> anyhow::Result<()> {
@@ -21,6 +23,10 @@ pub fn main(input: String) -> anyhow::Result<()> {
     }
 
     log::info!("part 1, sum of signal strengths: {}", cpu.state());
+
+    // Part 2
+    let crt = Crt::new();
+    println!("{crt}");
 
     Ok(())
 }
@@ -97,5 +103,28 @@ impl Cpu {
     /// Retrieves the final state calculation of the CPU.
     fn state(&self) -> i64 {
         self.state
+    }
+}
+
+/// The CRT of the communication system.
+#[derive(Debug)]
+struct Crt([[char; 40]; 6]);
+
+impl Crt {
+    /// Creates a new CRT with all pixels initially off.
+    fn new() -> Crt {
+        Crt([['.'; 40]; 6])
+    }
+}
+
+impl fmt::Display for Crt {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        for row in self.0 {
+            for c in row {
+                write!(f, "{}", c)?;
+            }
+            writeln!(f)?;
+        }
+        Ok(())
     }
 }
