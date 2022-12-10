@@ -1,25 +1,25 @@
 use anyhow::bail;
 
 pub fn main(input: String) -> anyhow::Result<()> {
-    let mut cpu = Cpu::new();
-
     let instructions: Vec<_> = input
         .lines()
         .filter_map(|line| Instruction::try_from(line).ok())
         .collect();
 
-    for instruction in instructions {
+    // Part 1
+    let mut cpu = Cpu::new();
+
+    for instruction in &instructions {
         match instruction {
             Instruction::Noop => cpu.cycle(None),
             Instruction::Addx(x) => {
-                for inc_x in [None, Some(x)] {
+                for inc_x in [None, Some(*x)] {
                     cpu.cycle(inc_x);
                 }
             }
         }
     }
 
-    // Part 1
     log::info!("part 1, sum of signal strengths: {}", cpu.state());
 
     Ok(())
