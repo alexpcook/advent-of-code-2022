@@ -8,24 +8,49 @@ pub fn main(input: String) -> anyhow::Result<()> {
         .filter_map(|line| Instruction::try_from(line).ok())
         .collect();
 
-    // Part 1
     let mut cpu = Cpu::new();
+    let mut crt = Crt::new();
 
-    for instruction in &instructions {
+    let mut crt_position = 0i64;
+
+    for instruction in instructions {
         match instruction {
-            Instruction::Noop => cpu.cycle(None),
+            Instruction::Noop => {
+                let sprite_position = cpu.x;
+
+                if (crt_position % 40).abs_diff(sprite_position) <= 1 {
+                    let row = (crt_position / 40) as usize;
+                    let col = (crt_position % 40) as usize;
+                    let pixel = crt.0.get_mut(row).unwrap().get_mut(col).unwrap();
+                    *pixel = '#';
+                }
+
+                crt_position += 1;
+                cpu.cycle(None);
+            }
             Instruction::Addx(x) => {
-                for inc_x in [None, Some(*x)] {
+                for inc_x in [None, Some(x)] {
+                    let sprite_position = cpu.x;
+
+                    if (crt_position % 40).abs_diff(sprite_position) <= 1 {
+                        let row = (crt_position / 40) as usize;
+                        let col = (crt_position % 40) as usize;
+                        let pixel = crt.0.get_mut(row).unwrap().get_mut(col).unwrap();
+                        *pixel = '#';
+                    }
+
+                    crt_position += 1;
                     cpu.cycle(inc_x);
                 }
             }
         }
     }
 
+    // Part 1
     log::info!("part 1, sum of signal strengths: {}", cpu.state());
 
     // Part 2
-    let crt = Crt::new();
+    log::info!("part 2, picture...");
     println!("{crt}");
 
     Ok(())
