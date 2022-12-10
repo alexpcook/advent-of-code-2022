@@ -14,35 +14,24 @@ pub fn main(input: String) -> anyhow::Result<()> {
     let mut crt_position = 0i64;
 
     for instruction in instructions {
-        match instruction {
-            Instruction::Noop => {
-                let sprite_position = cpu.x;
+        let instruction_range = match instruction {
+            Instruction::Noop => vec![None],
+            Instruction::Addx(x) => vec![None, Some(x)],
+        };
 
-                if (crt_position % 40).abs_diff(sprite_position) <= 1 {
-                    let row = (crt_position / 40) as usize;
-                    let col = (crt_position % 40) as usize;
-                    let pixel = crt.0.get_mut(row).unwrap().get_mut(col).unwrap();
-                    *pixel = '#';
-                }
+        for inc_x in instruction_range {
+            let sprite_position = cpu.x;
 
-                crt_position += 1;
-                cpu.cycle(None);
+            if (crt_position % 40).abs_diff(sprite_position) <= 1 {
+                let row = (crt_position / 40) as usize;
+                let col = (crt_position % 40) as usize;
+
+                let pixel = crt.0.get_mut(row).unwrap().get_mut(col).unwrap();
+                *pixel = '#';
             }
-            Instruction::Addx(x) => {
-                for inc_x in [None, Some(x)] {
-                    let sprite_position = cpu.x;
 
-                    if (crt_position % 40).abs_diff(sprite_position) <= 1 {
-                        let row = (crt_position / 40) as usize;
-                        let col = (crt_position % 40) as usize;
-                        let pixel = crt.0.get_mut(row).unwrap().get_mut(col).unwrap();
-                        *pixel = '#';
-                    }
-
-                    crt_position += 1;
-                    cpu.cycle(inc_x);
-                }
-            }
+            crt_position += 1;
+            cpu.cycle(inc_x);
         }
     }
 
