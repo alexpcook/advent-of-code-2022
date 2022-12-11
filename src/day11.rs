@@ -3,7 +3,7 @@ use std::collections::{HashMap, VecDeque};
 use anyhow::{anyhow, bail};
 
 /// The number of rounds to simulate.
-const ROUNDS: usize = 20;
+const ROUNDS: usize = 10_000;
 
 pub fn main(input: String) -> anyhow::Result<()> {
     let mut monkeys: Vec<Monkey> = input.split("\n\n").flat_map(Monkey::try_from).collect();
@@ -15,16 +15,18 @@ pub fn main(input: String) -> anyhow::Result<()> {
 
     let mut throw_items: HashMap<usize, VecDeque<u32>> = HashMap::with_capacity(8);
 
-    for _ in 0..ROUNDS {
+    for r in 0..ROUNDS {
+        log::info!("starting round {r}");
+
         for (m, monkey) in monkeys.iter_mut().enumerate() {
             if let Some(queue) = throw_items.get_mut(&m) {
                 while let Some(item) = queue.pop_front() {
-                    monkey.items.push(item);
+                    monkey.items.push(item % monkey.test_divisor);
                 }
             }
 
             for item in &monkey.items {
-                let worry_level = ((monkey.operation)(*item) as f64 / 3.0).floor() as u32;
+                let worry_level = (monkey.operation)(*item);
 
                 let to_monkey = if worry_level % monkey.test_divisor == 0 {
                     monkey.true_monkey
@@ -38,7 +40,7 @@ pub fn main(input: String) -> anyhow::Result<()> {
                     .or_insert_with(|| VecDeque::from([worry_level]));
             }
 
-            monkey.inspected += monkey.items.len() as u32;
+            monkey.inspected += monkey.items.len() as u64;
             monkey.items.clear();
         }
     }
@@ -71,7 +73,7 @@ struct Monkey {
     /// Which monkey gets the item if the test is false.
     false_monkey: usize,
     /// The number of items inspected by the monkey.
-    inspected: u32,
+    inspected: u64,
 }
 
 impl TryFrom<&str> for Monkey {
