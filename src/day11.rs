@@ -1,12 +1,58 @@
+use std::collections::{HashMap, VecDeque};
+
 use anyhow::{anyhow, bail};
 
-pub fn main(input: String) -> anyhow::Result<()> {
-    let monkeys: Vec<Monkey> = input
-        .split("\n\n")
-        .flat_map(|lines| Monkey::try_from(lines))
-        .collect();
+/// The number of rounds to simulate.
+const ROUNDS: usize = 20;
 
-    println!("{monkeys:?}");
+pub fn main(input: String) -> anyhow::Result<()> {
+    let mut monkeys: Vec<Monkey> = input.split("\n\n").flat_map(Monkey::try_from).collect();
+
+    let n = monkeys.len();
+    if n != 8 {
+        bail!("want 8 monkeys, got {n}");
+    }
+
+    let mut throw_items: HashMap<usize, VecDeque<u32>> = HashMap::with_capacity(8);
+
+    for _ in 0..ROUNDS {
+        for (m, monkey) in monkeys.iter_mut().enumerate() {
+            if let Some(queue) = throw_items.get_mut(&m) {
+                while let Some(item) = queue.pop_front() {
+                    monkey.items.push(item);
+                }
+            }
+
+            for item in &monkey.items {
+                let worry_level = ((monkey.operation)(*item) as f64 / 3.0).floor() as u32;
+
+                let to_monkey = if worry_level % monkey.test_divisor == 0 {
+                    monkey.true_monkey
+                } else {
+                    monkey.false_monkey
+                };
+
+                throw_items
+                    .entry(to_monkey)
+                    .and_modify(|queue| queue.push_back(worry_level))
+                    .or_insert_with(|| VecDeque::from([worry_level]));
+            }
+
+            monkey.inspected += monkey.items.len() as u32;
+            monkey.items.clear();
+        }
+    }
+
+    monkeys.sort_unstable_by(|monkey1, monkey2| {
+        monkey2.inspected.partial_cmp(&monkey1.inspected).unwrap()
+    });
+
+    let monkey_business = monkeys
+        .into_iter()
+        .take(2)
+        .fold(1, |acc, monkey| acc * monkey.inspected);
+
+    log::info!("part 1, level of monkey business: {monkey_business}");
 
     Ok(())
 }
@@ -24,6 +70,8 @@ struct Monkey {
     true_monkey: usize,
     /// Which monkey gets the item if the test is false.
     false_monkey: usize,
+    /// The number of items inspected by the monkey.
+    inspected: u32,
 }
 
 impl TryFrom<&str> for Monkey {
@@ -33,7 +81,7 @@ impl TryFrom<&str> for Monkey {
         let lines: Vec<_> = value.lines().collect();
 
         let n: usize = lines
-            .get(0)
+            .first()
             .and_then(|line| {
                 line.chars()
                     .find(|c| c.is_ascii_digit())
@@ -92,6 +140,7 @@ impl TryFrom<&str> for Monkey {
             test_divisor,
             true_monkey,
             false_monkey,
+            inspected: 0,
         })
     }
 }
