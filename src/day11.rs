@@ -3,10 +3,10 @@ use std::collections::{HashMap, VecDeque};
 use anyhow::{anyhow, bail};
 
 /// The number of rounds to simulate.
-const ROUNDS: usize = 20;
+const ROUNDS: usize = 10_000;
 
 /// The number by which to divide your worry level.
-const WORRY_LEVEL_DIVISOR: u32 = 3;
+const WORRY_LEVEL_DIVISOR: u32 = 1;
 
 pub fn main(input: String) -> anyhow::Result<()> {
     let mut monkeys: Vec<Monkey> = input.split("\n\n").flat_map(Monkey::try_from).collect();
@@ -24,28 +24,16 @@ pub fn main(input: String) -> anyhow::Result<()> {
         for (m, monkey) in monkeys.iter_mut().enumerate() {
             if let Some(queue) = throw_items.get_mut(&m) {
                 while let Some(worry_level) = queue.pop_front() {
-                    let mut adjusted_worry_level = worry_level % monkey.test_divisor;
-
-                    while (monkey.operation)(worry_level) / WORRY_LEVEL_DIVISOR
-                        % monkey.test_divisor
-                        != (monkey.operation)(adjusted_worry_level) / WORRY_LEVEL_DIVISOR
-                            % monkey.test_divisor
-                    {
-                        adjusted_worry_level += monkey.test_divisor;
-                    }
-
-                    assert_eq!(
-                        (monkey.operation)(worry_level) / WORRY_LEVEL_DIVISOR % monkey.test_divisor,
-                        (monkey.operation)(adjusted_worry_level) / WORRY_LEVEL_DIVISOR % monkey.test_divisor,
-                        "monkey {m}, worry level {worry_level}, adjusted worry level {adjusted_worry_level}"
-                    );
-
-                    monkey.items.push(adjusted_worry_level);
+                    monkey.items.push(worry_level);
                 }
             }
 
             for item in &monkey.items {
-                let worry_level = (monkey.operation)(*item) / WORRY_LEVEL_DIVISOR;
+                let worry_level = (monkey.operation)(if WORRY_LEVEL_DIVISOR > 1 {
+                    *item
+                } else {
+                    *item % monkey.test_divisor
+                }) / WORRY_LEVEL_DIVISOR;
 
                 let to_monkey = if worry_level % monkey.test_divisor == 0 {
                     monkey.true_monkey
