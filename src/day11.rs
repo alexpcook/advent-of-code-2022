@@ -27,16 +27,18 @@ pub fn main(input: String) -> anyhow::Result<()> {
                     let mut adjusted_worry_level = worry_level % monkey.test_divisor;
 
                     while (monkey.operation)(worry_level) / WORRY_LEVEL_DIVISOR
+                        % monkey.test_divisor
                         != (monkey.operation)(adjusted_worry_level) / WORRY_LEVEL_DIVISOR
+                            % monkey.test_divisor
                     {
                         adjusted_worry_level += monkey.test_divisor;
                     }
 
                     assert_eq!(
                         (monkey.operation)(worry_level) / WORRY_LEVEL_DIVISOR % monkey.test_divisor,
-                        (monkey.operation)(adjusted_worry_level) / WORRY_LEVEL_DIVISOR
-                            % monkey.test_divisor,
-                    "monkey {m}, worry level {worry_level}, adjusted worry_level {adjusted_worry_level}");
+                        (monkey.operation)(adjusted_worry_level) / WORRY_LEVEL_DIVISOR % monkey.test_divisor,
+                        "monkey {m}, worry level {worry_level}, adjusted worry level {adjusted_worry_level}"
+                    );
 
                     monkey.items.push(adjusted_worry_level);
                 }
