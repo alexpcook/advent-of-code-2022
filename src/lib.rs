@@ -28,6 +28,10 @@ pub mod day1;
 pub mod day10;
 /// Day 11 solution.
 pub mod day11;
+/// Day 12 solution.
+pub mod day12;
+/// Day 13 solution.
+pub mod day13;
 /// Day 2 solution.
 pub mod day2;
 /// Day 3 solution.
@@ -76,6 +80,8 @@ pub async fn solution(config: Config) -> anyhow::Result<()> {
         9 => day9::main(input),
         10 => day10::main(input),
         11 => day11::main(input),
+        12 => day12::main(input),
+        13 => day13::main(input),
         d => bail!("solution for day {d} does not exist"),
     }
 }
