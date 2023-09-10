@@ -1,3 +1,3 @@
-pub fn main(input: String) -> anyhow::Result<()> {
+pub fn main(_input: String) -> anyhow::Result<()> {
     Ok(())
 }
